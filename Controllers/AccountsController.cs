@@ -4,20 +4,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using AuthenticationService.Models;
+using System.ComponentModel.DataAnnotations;
+using AuthenticationService.Common.Attributes;
 
 namespace AuthenticationService.Controllers
 {
     [Route("[controller]/[action]")]
     public class AccountsController : Controller
     {
-        // GET api/values
         [HttpGet]
         public IEnumerable<string> Get()
         {
             return new string[] { "value1", "value2" };
         }
 
-        // GET api/values/5
         [HttpGet("{id}")]
         public string Get(int id)
         {
@@ -25,13 +25,23 @@ namespace AuthenticationService.Controllers
         }
 
         [HttpPost]
-        public IActionResult Add([FromBody] Account accountModel )
+        //[ValidateModel]
+        //  X-XSRF-TOKEN
+        public IActionResult Add([FromBody][Required] AccountR accountModel )
         {
+            if (!ModelState.IsValid) //Here i have a breakpoint!
+            {
+                return BadRequest(new
+                {
+                    code = 400,
+                    message = ModelState.Values.First().Errors.First().ErrorMessage
+                });
+            }
             return Json(accountModel);        
         }
         
         [HttpPost]
-        public IActionResult Edit([FromBody] Account accountModel )
+        public IActionResult Edit([FromBody] AccountR accountModel )
         {
             return Json(accountModel);        
         }
@@ -40,6 +50,12 @@ namespace AuthenticationService.Controllers
         public IActionResult Delete(int id )
         {
             return Ok();        
+        }
+
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return Ok();
         }
     }
 }
