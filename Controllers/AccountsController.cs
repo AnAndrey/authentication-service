@@ -6,12 +6,24 @@ using Microsoft.AspNetCore.Mvc;
 using AuthenticationService.Models;
 using System.ComponentModel.DataAnnotations;
 using AuthenticationService.Common.Attributes;
+using AuthenticationService.Data;
+using Microsoft.AspNetCore.Identity;
 
 namespace AuthenticationService.Controllers
 {
     [Route("[controller]/[action]")]
     public class AccountsController : Controller
     {
+        private readonly UserManager<Account> _userManager;
+        // private readonly SignInManager<Account> _signInManager;
+        private ApplicationDbContext _dbContext;
+
+        public AccountsController(ApplicationDbContext dbContext,UserManager<Account> userManager)
+        {
+            _dbContext = dbContext;
+            _userManager = userManager;
+            // _signInManager = signInManager;
+        }
         [HttpGet]
         public IEnumerable<string> Get()
         {
@@ -27,7 +39,7 @@ namespace AuthenticationService.Controllers
         [HttpPost]
         //[ValidateModel]
         //  X-XSRF-TOKEN
-        public IActionResult Add([FromBody][Required] AccountR accountModel )
+        public async Task<IActionResult> Add([FromBody][Required] AccountSettings accountModel )
         {
             if (!ModelState.IsValid) //Here i have a breakpoint!
             {
@@ -37,11 +49,24 @@ namespace AuthenticationService.Controllers
                     message = ModelState.Values.First().Errors.First().ErrorMessage
                 });
             }
+
+
+            Account user = new Account { UserName = accountModel.Name};
+                // добавляем пользователя
+                var result = await _userManager.CreateAsync(user, accountModel.Password);
+            // _dbContext.Accounts.Add(new Account(){ 
+            //     UserName = accountModel.Name,
+            //     Pa = accountModel.Password,
+            //     Role = new Role(){ Name = accountModel.Role}  });
+            
+            //ASYNC!!!
+            //_dbContext.SaveChanges();
+
             return Json(accountModel);        
         }
         
         [HttpPost]
-        public IActionResult Edit([FromBody] AccountR accountModel )
+        public IActionResult Edit([FromBody] AccountSettings accountModel )
         {
             return Json(accountModel);        
         }

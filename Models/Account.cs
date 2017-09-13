@@ -1,15 +1,15 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace AuthenticationService.Models
 {
-    public class AccountR
+    public class Account:IdentityUser
     {
-        [StringLength(32, MinimumLength = 3), Required]
-        public string Username {get;set;}
-        [StringLength(32, MinimumLength = 8), Required]
-        public string Password{get;set;}
-        [Required]
-        public string Role{get;set;}
+        //public int Id {get;set;}
+        //public string Name {get;set;}
+        //public string Password{get;set;}
+        //public Role Role{get;set;}
+        public int? RoleId { get; set; }
 
     }
 }
