@@ -8,6 +8,9 @@ using System.ComponentModel.DataAnnotations;
 using AuthenticationService.Common.Attributes;
 using AuthenticationService.Data;
 using Microsoft.AspNetCore.Identity;
+using AuthenticationService.Common.Extensions;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace AuthenticationService.Controllers
 {
@@ -25,15 +28,18 @@ namespace AuthenticationService.Controllers
             // _signInManager = signInManager;
         }
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IActionResult Get()
         {
-            return new string[] { "value1", "value2" };
+            
+            var accounts = _userManager.Users.Include(r => r.Role).Select(x => x.ToAccountView());
+            return Json(accounts); 
         }
 
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<IActionResult> Get(string id)
         {
-            return "value";
+            var account = await _userManager.Users.Include(r => r.Role).FirstOrDefaultAsync(x => x.Id == id);
+            return Json(account.ToAccountView()); 
         }
 
         [HttpPost]
@@ -41,7 +47,7 @@ namespace AuthenticationService.Controllers
         //  X-XSRF-TOKEN
         public async Task<IActionResult> Add([FromBody][Required] AccountSettings accountModel )
         {
-            if (!ModelState.IsValid) //Here i have a breakpoint!
+            if (!ModelState.IsValid) 
             {
                 return BadRequest(new
                 {
@@ -51,16 +57,8 @@ namespace AuthenticationService.Controllers
             }
 
 
-            Account user = new Account { UserName = accountModel.Name};
-                // добавляем пользователя
-                var result = await _userManager.CreateAsync(user, accountModel.Password);
-            // _dbContext.Accounts.Add(new Account(){ 
-            //     UserName = accountModel.Name,
-            //     Pa = accountModel.Password,
-            //     Role = new Role(){ Name = accountModel.Role}  });
             
-            //ASYNC!!!
-            //_dbContext.SaveChanges();
+            var result = await _userManager.CreateAsync(accountModel.ToAccount(), accountModel.Password);
 
             return Json(accountModel);        
         }

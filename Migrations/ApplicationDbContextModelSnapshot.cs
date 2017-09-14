@@ -75,7 +75,7 @@ namespace AuthenticationService.Migrations
 
             modelBuilder.Entity("AuthenticationService.Models.Account", b =>
                 {
-                    b.HasOne("AuthenticationService.Models.Role")
+                    b.HasOne("AuthenticationService.Models.Role", "Role")
                         .WithMany("Accounts")
                         .HasForeignKey("RoleId");
                 });

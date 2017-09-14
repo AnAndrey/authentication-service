@@ -11,8 +11,8 @@ using System;
 namespace AuthenticationService.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20170913200902_Initial")]
-    partial class Initial
+    [Migration("20170914185417_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -76,7 +76,7 @@ namespace AuthenticationService.Migrations
 
             modelBuilder.Entity("AuthenticationService.Models.Account", b =>
                 {
-                    b.HasOne("AuthenticationService.Models.Role")
+                    b.HasOne("AuthenticationService.Models.Role", "Role")
                         .WithMany("Accounts")
                         .HasForeignKey("RoleId");
                 });
