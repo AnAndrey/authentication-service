@@ -11,7 +11,10 @@ using Microsoft.AspNetCore.Identity;
 using AuthenticationService.Common.Extensions;
 using Microsoft.EntityFrameworkCore;
 
-
+//ToDO
+// Validate model using AttributeValidation
+// Return detailed error
+// need to change roles and password
 namespace AuthenticationService.Controllers
 {
     [Route("[controller]/[action]")]
@@ -55,8 +58,6 @@ namespace AuthenticationService.Controllers
                     message = ModelState.Values.First().Errors.First().ErrorMessage
                 });
             }
-
-
             
             var result = await _userManager.CreateAsync(accountModel.ToAccount(), accountModel.Password);
 
@@ -64,15 +65,43 @@ namespace AuthenticationService.Controllers
         }
         
         [HttpPost]
-        public IActionResult Edit([FromBody] AccountSettings accountModel )
+        public async Task<IActionResult> Edit([FromBody] AccountView accountModel )
         {
-            return Json(accountModel);        
+            // if (!ModelState.IsValid) 
+            // {
+            //     return BadRequest(new
+            //     {
+            //         code = 400,
+            //         message = ModelState.Values.First().Errors.First().ErrorMessage
+            //     });
+            // }
+            var account = _userManager.FindByIdAsync(accountModel.Id).Result;
+            account.UserName = accountModel.Name;
+
+            var result = await _userManager.UpdateAsync(account);
+            if(result.Succeeded)
+            {
+                var newAccount = await _userManager.Users.Include(r => r.Role).FirstOrDefaultAsync(x => x.Id == accountModel.Id);
+                return Json( newAccount.ToAccountView());
+            }   
+            return BadRequest();        
         }
 
         [HttpPost("{id}")]
-        public IActionResult Delete(int id )
+        public async Task<IActionResult> Delete(string id )
         {
-            return Ok();        
+            if (String.IsNullOrEmpty(id))
+            {
+                return BadRequest();
+            }
+            var account = await _userManager.FindByIdAsync(id);
+            if(account != null)
+            {
+                var result = await _userManager.DeleteAsync(account);
+                if(result.Succeeded)
+                return Ok();
+            }
+            return BadRequest();        
         }
 
         [HttpGet]
